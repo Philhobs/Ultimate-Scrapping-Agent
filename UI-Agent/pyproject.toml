@@ -1,0 +1,22 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "ui-agent"
+version = "0.1.0"
+description = "AI-powered UI agent that generates frontend code from text descriptions and clones designs from screenshots via Claude Agent SDK"
+requires-python = ">=3.10"
+license = "MIT"
+dependencies = [
+    "claude-agent-sdk>=0.1.0",
+    "typer[all]>=0.12.0",
+    "rich>=13.0.0",
+    "Pillow>=10.0.0",
+]
+
+[project.scripts]
+ui-agent = "ui_agent.cli:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/ui_agent"]
