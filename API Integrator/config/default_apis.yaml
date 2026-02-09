@@ -1,0 +1,61 @@
+# Default API registry for API Integrator
+# Each API entry has: base_url, description, auth_type, default_headers, endpoints
+
+apis:
+  open_meteo:
+    description: "Free weather API — no key required. Current & forecast weather data."
+    base_url: "https://api.open-meteo.com/v1"
+    auth_type: none
+    endpoints:
+      forecast:
+        path: "/forecast"
+        method: GET
+        description: "Get weather forecast for coordinates"
+        params:
+          latitude: "Latitude (e.g. 48.8566)"
+          longitude: "Longitude (e.g. 2.3522)"
+          current_weather: "true for current weather"
+          hourly: "Comma-separated variables: temperature_2m,precipitation,windspeed_10m"
+
+  jsonplaceholder:
+    description: "Fake REST API for testing and prototyping."
+    base_url: "https://jsonplaceholder.typicode.com"
+    auth_type: none
+    endpoints:
+      posts:
+        path: "/posts"
+        method: GET
+        description: "List all posts or get a single post by ID"
+      post_by_id:
+        path: "/posts/{id}"
+        method: GET
+        description: "Get a single post"
+      create_post:
+        path: "/posts"
+        method: POST
+        description: "Create a new post"
+
+  restcountries:
+    description: "Get information about countries — no key required."
+    base_url: "https://restcountries.com/v3.1"
+    auth_type: none
+    endpoints:
+      by_name:
+        path: "/name/{name}"
+        method: GET
+        description: "Search countries by name"
+      all:
+        path: "/all"
+        method: GET
+        description: "Get all countries"
+
+  huggingface:
+    description: "HuggingFace Inference API for running ML models."
+    base_url: "https://api-inference.huggingface.co"
+    auth_type: bearer
+    auth_env_var: HF_API_TOKEN
+    endpoints:
+      inference:
+        path: "/models/{model_id}"
+        method: POST
+        description: "Run inference on any HuggingFace model"

@@ -1,0 +1,20 @@
+# Example pipeline: Fetch weather data and summarize it
+name: weather-summary
+description: Get current weather for Paris and summarize the data
+
+steps:
+  - type: api
+    name: fetch_weather
+    description: "Fetch current weather for Paris from Open-Meteo API"
+    api_name: open_meteo
+    endpoint: forecast
+    params:
+      latitude: "48.8566"
+      longitude: "2.3522"
+      current_weather: "true"
+      hourly: "temperature_2m,precipitation"
+
+  - type: model
+    name: summarize
+    description: "Summarize the weather data into a human-readable format"
+    model_id: facebook/bart-large-cnn
