@@ -1,0 +1,1 @@
+"""Web Scraper API endpoints."""

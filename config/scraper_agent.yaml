@@ -1,0 +1,27 @@
+agent:
+  name: web-scraper
+  model: claude-sonnet-4-5
+  max_turns: 15
+
+scraping:
+  max_tier: 3
+  tier_attempts: 2          # retries per tier before escalation
+  request_timeout: 30       # seconds
+  max_body_chars: 50000     # truncate HTML body
+  rate_limit:
+    requests_per_second: 5
+    burst: 10
+
+  user_agent_rotation: true
+
+  proxy:
+    enabled: false
+    urls: []                 # populated via AGENT_SCRAPER_PROXY_URLS env var
+
+persistence:
+  db_url: "sqlite+aiosqlite:///data/scraper.db"
+
+api:
+  host: "0.0.0.0"
+  port: 8001
+  prefix: "/api/v1/scraper"
