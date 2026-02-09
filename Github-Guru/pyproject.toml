@@ -1,0 +1,25 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "github-guru"
+version = "0.1.0"
+description = "AI-powered GitHub repository analyzer using Claude Agent SDK"
+requires-python = ">=3.10"
+license = "MIT"
+dependencies = [
+    "claude-agent-sdk>=0.1.0",
+    "typer[all]>=0.12.0",
+    "rich>=13.0.0",
+    "PyGithub>=2.0.0",
+    "pyyaml>=6.0",
+    "sentence-transformers>=3.0.0",
+    "numpy>=1.24.0",
+]
+
+[project.scripts]
+github-guru = "github_guru.cli:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/github_guru"]

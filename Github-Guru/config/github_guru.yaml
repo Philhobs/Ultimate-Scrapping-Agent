@@ -1,0 +1,64 @@
+# GitHub Guru Configuration
+
+# Claude model to use for agent queries
+model: claude-sonnet-4-5-20250929
+
+# Maximum conversation turns for agent queries
+max_turns: 20
+
+# File analysis settings
+analysis:
+  # Maximum file size to analyze (bytes)
+  max_file_size: 524288  # 500KB
+
+  # Directories to ignore during ingestion
+  ignore_dirs:
+    - .git
+    - node_modules
+    - __pycache__
+    - .venv
+    - venv
+    - .tox
+    - .mypy_cache
+    - .pytest_cache
+    - dist
+    - build
+    - .github-guru
+
+  # File extensions to ignore
+  ignore_extensions:
+    - .pyc
+    - .pyo
+    - .so
+    - .o
+    - .exe
+    - .bin
+    - .png
+    - .jpg
+    - .gif
+    - .zip
+    - .tar
+    - .gz
+    - .lock
+
+# Chunking settings
+chunking:
+  # Maximum lines per chunk before splitting
+  max_chunk_lines: 100
+
+  # Sliding window size for non-Python files (lines)
+  window_size: 60
+
+  # Sliding window overlap (lines)
+  window_overlap: 10
+
+# Embedding settings
+embeddings:
+  # Sentence Transformer model name
+  model: all-MiniLM-L6-v2
+
+  # Default number of results for semantic search
+  default_top_k: 10
+
+# Cache directory name (relative to repo root)
+cache_dir: .github-guru
