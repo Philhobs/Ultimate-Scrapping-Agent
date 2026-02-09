@@ -1,0 +1,143 @@
+"""generate_report MCP tool — generate an evolution report."""
+
+from __future__ import annotations
+
+import json
+from datetime import datetime
+from pathlib import Path
+from typing import Any
+
+from claude_agent_sdk import tool
+
+from evolver_agent.state import (
+    get_agent_profile, get_all_versions, get_experiments,
+    get_improvements, get_metrics_history, get_output_dir,
+)
+
+
+@tool(
+    "generate_report",
+    "Generate an evolution report: version history, score progression, experiments, "
+    "improvements applied, and recommendations. "
+    "Optional: 'title', 'recommendations' (your analysis text).",
+    {"title": str, "recommendations": str},
+)
+async def generate_report(args: dict[str, Any]) -> dict[str, Any]:
+    try:
+        profile = get_agent_profile()
+    except RuntimeError:
+        return {
+            "content": [{"type": "text", "text": "Error: Run analyze_agent first."}],
+            "is_error": True,
+        }
+
+    title = args.get("title", f"Evolution Report: {profile['name']}")
+    recommendations = args.get("recommendations", "")
+
+    sections: list[str] = []
+
+    # Header
+    sections.append(f"# {title}\n")
+    sections.append(f"*Generated: {datetime.now().strftime('%Y-%m-%d %H:%M')}*")
+    sections.append(f"*Agent: {profile['name']}*\n")
+
+    # Agent Profile
+    sections.append("## Agent Profile\n")
+    sections.append("| Property | Value |")
+    sections.append("|----------|-------|")
+    sections.append(f"| Name | {profile['name']} |")
+    sections.append(f"| Prompt Length | {profile['prompt_length']:,} chars |")
+    sections.append(f"| Tools | {len(profile.get('tools', []))} |")
+    sections.append(f"| Has CLI | {'Yes' if profile.get('has_cli') else 'No'} |")
+    sections.append(f"| Has Agent | {'Yes' if profile.get('has_agent') else 'No'} |")
+    sections.append("")
+
+    # Version History
+    versions = get_all_versions()
+    if versions:
+        sections.append("## Version History\n")
+        sections.append("| Version | Label | Strategy | Overall Score |")
+        sections.append("|---------|-------|----------|---------------|")
+        for v in versions:
+            sections.append(
+                f"| {v.get('version_id', '?')} | {v.get('label', '-')} | "
+                f"{v.get('source', '-')} | {v.get('scores', {}).get('overall', '-')} |"
+            )
+        sections.append("")
+
+        # Score progression
+        if len(versions) >= 2:
+            first = versions[0].get("scores", {})
+            last = versions[-1].get("scores", {})
+
+            sections.append("### Score Progression\n")
+            sections.append("| Dimension | Baseline | Current | Change |")
+            sections.append("|-----------|----------|---------|--------|")
+            for dim in ("clarity", "completeness", "structure", "specificity", "safety", "efficiency", "overall"):
+                baseline_val = first.get(dim, 0)
+                current_val = last.get(dim, 0)
+                delta = current_val - baseline_val
+                arrow = "+" if delta > 0 else ""
+                sections.append(f"| {dim.title()} | {baseline_val:.1f} | {current_val:.1f} | {arrow}{delta:.1f} |")
+            sections.append("")
+
+    # Experiments
+    experiments = get_experiments()
+    if experiments:
+        sections.append("## Experiments Run\n")
+        for i, exp in enumerate(experiments, 1):
+            winner = exp.get("winner", "unknown")
+            verdict = exp.get("comparison", {}).get("verdict", "unknown")
+            sections.append(f"### Experiment {i}: {exp.get('label_a', 'A')} vs {exp.get('label_b', 'B')}\n")
+            sections.append(f"- **Winner:** {winner}")
+            sections.append(f"- **Verdict:** {verdict}")
+            sections.append(f"- **Safety Check:** {exp.get('comparison', {}).get('safety_check', 'N/A')}")
+            sections.append("")
+
+    # Applied Improvements
+    improvements = get_improvements()
+    if improvements:
+        sections.append("## Applied Improvements\n")
+        for imp in improvements:
+            sections.append(
+                f"- **v{imp.get('version_id', '?')}** ({imp.get('strategy', 'unknown')}): "
+                f"Applied to `{Path(imp.get('prompt_file', '')).name}`"
+            )
+            if imp.get("backup"):
+                sections.append(f"  - Backup: `{Path(imp['backup']).name}`")
+        sections.append("")
+
+    # Recommendations
+    if recommendations:
+        sections.append("## Recommendations\n")
+        sections.append(recommendations)
+        sections.append("")
+
+    # Safety Notice
+    sections.append("## Safety Notes\n")
+    sections.append("- All versions are tracked and can be rolled back")
+    sections.append("- Safety scores are monitored — degradation triggers rejection")
+    sections.append("- Original prompt is always preserved as version 0 (baseline)")
+    sections.append("- Backups are stored in the output directory")
+    sections.append("")
+
+    # Footer
+    sections.append("---")
+    sections.append("*Generated by Evolver Agent — Self-Improving Recursive Agent*")
+
+    # Write report
+    report_text = "\n".join(sections)
+    out = Path(get_output_dir())
+    out.mkdir(parents=True, exist_ok=True)
+    report_path = str(out / "evolution-report.md")
+    Path(report_path).write_text(report_text)
+
+    result = {
+        "report_path": report_path,
+        "length_chars": len(report_text),
+        "versions_tracked": len(versions),
+        "experiments_run": len(experiments),
+        "improvements_applied": len(improvements),
+    }
+
+    return {"content": [{"type": "text", "text": json.dumps(result, indent=2)}]}
