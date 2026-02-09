@@ -1,0 +1,22 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "devops-agent"
+version = "0.1.0"
+description = "AI-powered DevOps agent for Dockerfiles, CI/CD pipelines, IaC, security scanning, and deployment automation via Claude Agent SDK"
+requires-python = ">=3.10"
+license = "MIT"
+dependencies = [
+    "claude-agent-sdk>=0.1.0",
+    "typer[all]>=0.12.0",
+    "rich>=13.0.0",
+    "pyyaml>=6.0",
+]
+
+[project.scripts]
+devops-agent = "devops_agent.cli:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/devops_agent"]
